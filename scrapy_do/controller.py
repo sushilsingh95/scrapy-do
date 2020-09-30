@@ -428,12 +428,16 @@ class Controller(Service):
         # Run the crawler
         #-----------------------------------------------------------------------
         temp_proj_dir = os.path.join(temp_dir, project)
-        env = {'SPIDER_DATA_DIR': self.spider_data_dir}
+        env_vars = dict(os.environ)
+        env_vars['SPIDER_DATA_DIR'] = self.spider_data_dir
+        env_vars['SCRAPYDO_JOB_ID'] = job_id
+        env_vars['SCRAPYDO_JOB_SPIDER'] = spider
+        env_vars['SCRAPYDO_JOB_SPIDER_PAYLOAD'] = payload
         args = ['crawl', spider]
         if payload != '{}':
             args += ['-a', 'payload=' + payload]
         process, finished = run_process('scrapy', args, job_id,
-                                        self.log_dir, env=env,
+                                        self.log_dir, env=env_vars,
                                         path=temp_proj_dir)
 
         #-----------------------------------------------------------------------
@@ -604,7 +608,7 @@ class Controller(Service):
                 else:
                     break
             rj = self.running_jobs[job_id]
-            rj.process.signalProcess('KILL')
+            rj.process.signalProcess('INT')
             yield rj.finished_d
             self.counter_failure -= 1
             self.counter_cancel += 1
