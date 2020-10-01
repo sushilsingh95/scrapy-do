@@ -15,7 +15,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import moment from 'moment-timezone';
 import hljs from 'highlight.js';
 import { useAccordionToggle } from 'react-bootstrap/AccordionToggle';
-import { FaRegTimesCircle } from 'react-icons/fa';
+import { FaRegHandScissors, FaRegTimesCircle } from 'react-icons/fa';
 
 import { BACKEND_OPENED } from '../actions/backend';
 import { capitalizeFirst } from '../utils/helpers';
@@ -71,6 +71,14 @@ const getLogURL = (jobID, isError) => {
 // Job List Item
 //------------------------------------------------------------------------------
 class JobListItem extends Component {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      cancelled: false
+    };
+  }
+
   //----------------------------------------------------------------------------
   // Property types
   //----------------------------------------------------------------------------
@@ -87,6 +95,7 @@ class JobListItem extends Component {
     const cancelJob = () => {
       jobCancel(job.identifier)
         .catch((error) => {
+          this.setState({cancelled: false})
           setTimeout(() => this.alertDialog.show(error.message), 250);
         });
     };
@@ -102,6 +111,7 @@ class JobListItem extends Component {
 
     const msg = `Are you sure you want to cancel the job?`;
     this.cancelDialog.show(msg, yes, no);
+    setTimeout(() => this.setState({cancelled: true}), 250);
   };
 
   //----------------------------------------------------------------------------
@@ -124,7 +134,7 @@ class JobListItem extends Component {
           disabled={!this.props.connected}
           onClick={this.showCancelDialog}
         >
-          <FaRegTimesCircle /> Cancel
+          <FaRegTimesCircle /> {(this.state.cancelled)? 'Force' : ''} Cancel
         </Button>
       </div>
     );
